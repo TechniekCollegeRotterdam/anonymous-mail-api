@@ -5,7 +5,7 @@ const db = {
             email: 'user@gmail.com',
             userName: 'user',
             // twoFac is an object
-            twoFac: [
+            twoFactor: [
                 {
                     enabled: true,
                     type: 'email',
