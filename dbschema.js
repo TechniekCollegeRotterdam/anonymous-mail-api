@@ -3,7 +3,7 @@ const db = {
         {
             userId: 'vgdscjhbakjxdhbgehjnd',
             email: 'user@gmail.com',
-            userName: 'user',
+            username: 'user',
             // twoFac is an object
             twoFactor: [
                 {

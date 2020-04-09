@@ -1,5 +1,6 @@
 const config = require('../util/config')
 const {db} = require('../util/admin')
+const {validateSignUpData} = require('../util/validators')
 
 const firebase = require('firebase')
 firebase.initializeApp(config);
@@ -13,6 +14,10 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
             enabled: false
         }
     };
+
+    const {valid, errors} = validateSignUpData(newUser)
+
+    if (!valid) return res.status(400).json(errors)
 
     try {
         // Get user from users collection
@@ -46,6 +51,8 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
 
         // User userCredentials object to create an user document of the new user
         await db.doc(`/users/${newUser.username}`).set(userCredentials)
+
+        // TODO: send email verification mail. Login when verified. Comment out line 57
 
         return res.status(201).json({ token })
 
