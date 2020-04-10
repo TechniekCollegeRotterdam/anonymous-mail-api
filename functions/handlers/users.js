@@ -1,6 +1,7 @@
+// ts-check
 const config = require('../util/config')
-const {db} = require('../util/admin')
-const {validateSignUpData} = require('../util/validators')
+const {db, admin} = require('../util/admin')
+const {validateSignUpData, validateLoginData} = require('../util/validators')
 
 const firebase = require('firebase')
 firebase.initializeApp(config);
@@ -62,5 +63,62 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
             return res.status(400).json({email: 'Email is already is use'});
         else
             return res.status(500).json({general: 'Something went wrong, please try again'})
+    }
+}
+
+exports.loginWithEmailAndPassword = async (req, res) => {
+    const userCredentials = {
+        email: req.body.email,
+        password: req.body.password
+    }
+
+    const { errors, valid } = validateLoginData(userCredentials)
+
+    if (!valid)
+        return res.status(400).json(errors)
+
+    try {
+        // Sign in user
+        const data = await firebase.auth().signInWithEmailAndPassword(userCredentials.email, userCredentials.password)
+
+        // TODO: Get user data
+        /*
+        * TODO: Two step authentication for email and sms
+        *  pseudocode:
+        * swith(user.twoFactor.enable) {
+        * case true:
+        *   switch(user.twoFactor.type) {
+        *       case 'email':
+        *           twoStepEmail(user.twoFactor.info)
+        *           break
+        *       case 'sms':
+        *           twoStepSMS(user.twoFactor.info)
+        *           break
+        *       default:
+        *           break
+        *   }
+        *
+        * case false:
+        *   break
+        * default:
+        *   break
+        * }
+        * */
+
+        // Get user token
+        const token = await data.user.getIdToken()
+
+        return res.json({token})
+
+    } catch (err) {
+        console.error(err)
+        if (err.code === 'auth/wrong-password')
+            return res.status(404).json({general: 'Wrong credentials, please try again'});
+        else if (err.code === 'auth/user-not-found')
+            return res.status(404).json({general: 'Wrong credentials, please try again'});
+        else if (err.code === 'auth/invalid-email')
+            return res.status(404).json({general: 'Wrong credentials, please try again'});
+        else
+            return res.status(500).json({error: err.code})
     }
 }

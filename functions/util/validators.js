@@ -1,5 +1,5 @@
 // Check if email is Gmail
-const isGmail = (email) => {
+const Gmail = email => {
     // eslint-disable-next-line no-useless-escape
     const regExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@gmail.com/;
     // Valid gmail address
@@ -11,7 +11,7 @@ const isGmail = (email) => {
 }
 
 // Check if empty
-const isEmpty = (string) => {
+const Empty = string => {
     if (string.trim() === '')
         return true
     else
@@ -21,22 +21,38 @@ const isEmpty = (string) => {
 exports.validateSignUpData = (data) => {
     let errors = {}
 
-    if (isEmpty(data.email))
+    if (Empty(data.email))
         errors.email = 'Must not be empty'
-    else if (!isGmail(data.email))
+    else if (!Gmail(data.email))
         errors.email = 'Must be a valid gmail address'
 
-    if (isEmpty(data.password))
+    if (Empty(data.password))
         errors.password = 'Must not be empty'
     else if (data.password.length > 32)
         errors.password = 'Must not be longer than 32 characters'
 
-    if (isEmpty(data.username))
+    if (Empty(data.username))
         errors.username = 'Must not be empty'
 
     return {
         errors,
-        valid: Object.keys(errors).length === 0 ? true : false
+        valid: Object.keys(errors).length === 0
     }
 }
 
+exports.validateLoginData = (data) => {
+    let errors = {}
+
+    if (Empty(data.email))
+        errors.email = 'Must not be empty'
+    else if (!Gmail(data.email))
+        errors.email = 'Is not a valid Gmail address'
+
+    if (Empty(data.password))
+        errors.password = 'Must not be empty'
+
+    return {
+        errors,
+        valid: Object.keys(errors).length === 0
+    }
+}
