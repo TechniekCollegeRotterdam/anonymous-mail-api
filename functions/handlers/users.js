@@ -1,4 +1,3 @@
-// ts-check
 const config = require('../util/config')
 const {db, admin} = require('../util/admin')
 const {validateSignUpData, validateLoginData} = require('../util/validators')
