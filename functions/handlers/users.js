@@ -121,3 +121,25 @@ exports.loginWithEmailAndPassword = async (req, res) => {
             return res.status(500).json({error: err.code})
     }
 }
+
+exports.getOwnUserData = async (req, res) => {
+    let userDetails = {}
+
+    try {
+        // Get user
+        const user = await db.doc(`/users/${req.user.username}`).get()
+
+        // Check if user exists
+        if (user.exists){
+            userDetails.credentials = user.data()
+            return res.json(userDetails)
+        }
+        else
+            return res.status(404).json({error: 'User not found'})
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: err.code})
+    }
+}
+
