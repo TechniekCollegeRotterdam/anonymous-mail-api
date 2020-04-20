@@ -91,25 +91,26 @@ function getNewToken(oAuth2Client, callback) {
     });
 }*/
 
-function makeBody(to, from, subject, message) {
-    const str = [
-        "Content-Type: text/plain; charset=\"UTF-8\"\n",
-        "MIME-Version: 1.0\n",
-        "Content-Transfer-Encoding: 7bit\n",
-        "to: ", to, "\n",
-        "from: ", from, "\n",
-        "subject: ", subject, "\n\n",
-        message
-    ].join('')
 
-    const encodedMail = new Buffer(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_')
-    return encodedMail
-}
-
-async function sendMail(auth){
+async function sendMail(auth, to, from, subject, message){
     const gmail = google.gmail({ version: 'v1', auth })
 
-    let encodedMessage = makeBody("jeremiahkoeiman1@gmail.com", "anoniesmail@gmail.com", "test subject", "test message")
+    function makeBody() {
+        const str = [
+            "Content-Type: text/plain; charset=\"UTF-8\"\n",
+            "MIME-Version: 1.0\n",
+            "Content-Transfer-Encoding: 7bit\n",
+            "to: ", to, "\n",
+            "from: ", from, "\n",
+            "subject: ", subject, "\n\n",
+            message
+        ].join('')
+
+        const encodedMail = new Buffer(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_')
+        return encodedMail
+    }
+
+    let encodedMessage = makeBody()
 
     await gmail.users.messages.send({
         auth,
@@ -122,6 +123,21 @@ async function sendMail(auth){
 }
 
 exports.sendMail = async (req, res) => {
-    let email = await sendMail(oAuth2Client)
-    res.json({email})
+    
+    try {
+
+        const emailDetails = {
+            to: req.body.to,
+            from: req.user.email,
+            subject: req.body.subject,
+            message: req.body.message
+        }
+
+        await sendMail(oAuth2Client, emailDetails.to, emailDetails.from, emailDetails.subject, emailDetails.message)
+        return res.status(200).json({ message: "Email has been send" })
+        
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: err.code})
+    }
 }
