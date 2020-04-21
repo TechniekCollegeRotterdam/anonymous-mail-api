@@ -36,8 +36,8 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         // Set userId to the uid given from the data const above this line
         userId = data.user.uid
 
-        // Get users token
-        token = await data.user.getIdToken()
+        /*// Get users token
+        token = await data.user.getIdToken()*/
 
         // Object that represents the to be created user document
         const userCredentials = {
@@ -52,12 +52,19 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         // User userCredentials object to create an user document of the new user
         await db.doc(`/users/${newUser.username}`).set(userCredentials)
 
-        // TODO: send email verification mail. Login when verified. Comment out line 57
+        // Create custom token
+        const token = await admin.auth().createCustomToken(userId)
+
+        // Sign in user
+        await firebase.auth().signInWithCustomToken(token)
+
+        // TODO: send email verification mail. Login when verified. Comment out line 59
 
         return res.status(201).json({ token })
 
     } catch (err) {
-        console.error(err);
+        console.error(err.code);
+        console.error(err.message);
         if (err.code === 'auth/email-already-in-use')
             return res.status(400).json({email: 'Email is already is use'});
         else
