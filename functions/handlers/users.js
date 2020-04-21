@@ -36,9 +36,6 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         // Set userId to the uid given from the data const above this line
         userId = data.user.uid
 
-        /*// Get users token
-        token = await data.user.getIdToken()*/
-
         // Object that represents the to be created user document
         const userCredentials = {
             userId,
@@ -139,7 +136,6 @@ exports.getOwnUserData = async (req, res) => {
         // Check if user exists
         if (user.exists){
             userDetails.credentials = user.data()
-            return res.json(userDetails)
         }
         else
             return res.status(404).json({error: 'User not found'})
