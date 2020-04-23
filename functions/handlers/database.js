@@ -55,3 +55,24 @@ exports.deleteSpamEmailAddress = async (req, res) => {
         })
 }
 
+exports.getSpamEmailAddresses = async (req, res) => {
+
+    let emailData = []
+
+    try {
+        const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
+
+        if (data.empty) {
+            return res.status(404).json({error: 'No spammed email addresses found'})
+        } else {
+            data.forEach(doc => {
+                emailData.push(doc.data())
+            })
+        }
+
+        return res.json(emailData)
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: err.code})
+    }
+}
