@@ -57,7 +57,7 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
 
         // TODO: send email verification mail. Login when verified. Comment out line 59
 
-        return res.status(201).json({ token })
+        return res.status(201).json({token})
 
     } catch (err) {
         console.error(err.code);
@@ -75,7 +75,7 @@ exports.loginWithEmailAndPassword = async (req, res) => {
         password: req.body.password
     }
 
-    const { errors, valid } = validateLoginData(userCredentials)
+    const {errors, valid} = validateLoginData(userCredentials)
 
     if (!valid)
         return res.status(400).json(errors)
@@ -134,10 +134,9 @@ exports.getOwnUserData = async (req, res) => {
         const user = await db.doc(`/users/${req.user.username}`).get()
 
         // Check if user exists
-        if (user.exists){
+        if (user.exists) {
             userDetails.credentials = user.data()
-        }
-        else
+        } else
             return res.status(404).json({error: 'User not found'})
 
     } catch (err) {
