@@ -34,7 +34,7 @@ const db = {
     ],
     spammedEmails: [
         {
-            spammedEmailId: 'vyeskhfnbwykwheriyfuber',
+            username: 'user',
             spammedEmail: 'test@gmail.com',
             addedAt: '2019-12-06T15:17:46.433Z'
         }
