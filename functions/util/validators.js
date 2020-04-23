@@ -56,3 +56,15 @@ exports.validateLoginData = (data) => {
         valid: Object.keys(errors).length === 0
     }
 }
+
+exports.validateDatabaseData = (data) => {
+    let errors = {}
+
+    if (Empty(data.spammedEmail))
+        errors.spammedEmail = 'Must not be empty'
+
+    return {
+        errors,
+        valid: Object.keys(errors).length === 0
+    }
+}
