@@ -263,7 +263,9 @@ exports.addSpammer = async (req, res) => {
 }
 
 exports.getMessages = async (req, res) => {
+    // https://github.com/googleapis/google-api-nodejs-client/issues/1523
     const gmail = google.gmail({version: 'v1', auth: oAuth2Client})
+
     try {
         const messages = await gmail.users.messages.list({
             oAuth2Client,
