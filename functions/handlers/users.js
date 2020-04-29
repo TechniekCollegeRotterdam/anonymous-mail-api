@@ -140,6 +140,8 @@ exports.getOwnUserData = async (req, res) => {
             return res.status(404).json({error: 'User not found'})
 
     } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
         console.log(err)
         return res.status(500).json({error: err.code})
     }

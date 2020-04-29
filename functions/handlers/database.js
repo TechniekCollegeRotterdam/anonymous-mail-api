@@ -22,6 +22,8 @@ exports.addSpamEmailAddress = async (req, res) => {
 
         return res.json(addedEmail)
     } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
         console.log(err)
         return res.status(500).json({error: 'Something went wrong'})
     }
@@ -72,6 +74,8 @@ exports.getSpamEmailAddresses = async (req, res) => {
 
         return res.json(emailData)
     } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
         console.log(err)
         return res.status(500).json({error: err.code})
     }

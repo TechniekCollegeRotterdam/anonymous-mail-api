@@ -171,6 +171,8 @@ exports.sendMail = async (req, res) => {
         return res.status(200).json({message: "Email has been send"})
 
     } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
         console.log(err)
         return res.status(500).json({error: err.code})
     }
@@ -187,20 +189,17 @@ exports.addSpammer = async (req, res) => {
             return res.status(404).json({error: 'No spammed email addresses found'})
         } else {
             data.forEach(doc => {
-
-                // Get messages from user
-                const messages = listMessages('me', `from:${doc.data().spammedEmail}`)
-
                 // Add to spamData array
                 spamData.push({
-                    //spammedEmail: doc.data().spammedEmail,
-                    messages
+                    spammedEmail: doc.data().spammedEmail
                 })
             })
         }
 
         return res.json(spamData)
     } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
         console.log(err)
         return res.status(500).json({error: err.code})
     }
@@ -274,7 +273,10 @@ exports.getMessages = async (req, res) => {
         })
 
         return res.json(messages.data.messages)
-    } catch (e) {
-        return res.json(e)
+    } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
+        console.log(err)
+        return res.json(err)
     }
 }
