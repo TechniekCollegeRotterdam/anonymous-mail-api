@@ -10,7 +10,9 @@ const {
 } = require('./handlers/users');
 
 const {
-    sendMail
+    sendMail,
+    addSpammer,
+    getMessages
 } = require('./handlers/gmail')
 
 const {
@@ -26,7 +28,8 @@ app.get('/getOwnUserData/:username', protectedRoute, getOwnUserData)
 
 // Mail
 app.post('/sendMail', protectedRoute, sendMail)
-// TODO: Place given spam email adresses in gmail spam folder
+app.get('/addSpammer', protectedRoute, addSpammer)
+app.get('/getMessages', protectedRoute, getMessages)
 
 // Database
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)

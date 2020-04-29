@@ -1,6 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const {db} = require('../util/admin')
+const content = require('../token.json')
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://mail.google.com/'];
@@ -32,7 +34,11 @@ function authorize(credentials, callback) {
     // Check if we have previously stored a token.
     fs.readFile(TOKEN_PATH, (err, token) => {
         if (err) return getNewToken(oAuth2Client, callback);
-        oAuth2Client.setCredentials(JSON.parse(token));
+        //oAuth2Client.setCredentials(JSON.parse(token));
+        oAuth2Client.setCredentials({
+            refresh_token: content.refresh_token,
+            access_token: content.access_token
+        });
         //callback(oAuth2Client);
     });
 }
@@ -73,7 +79,9 @@ function getNewToken(oAuth2Client, callback) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-/*function listLabels(auth) {
+
+/*
+function listLabels(auth) {
     const gmail = google.gmail({version: 'v1', auth});
     gmail.users.labels.list({
         userId: 'me',
@@ -89,11 +97,12 @@ function getNewToken(oAuth2Client, callback) {
             console.log('No labels found.');
         }
     });
-}*/
+}
+*/
 
 
-async function sendMail(auth, to, from, subject, message){
-    const gmail = google.gmail({ version: 'v1', auth })
+async function sendMail(auth, to, from, subject, message) {
+    const gmail = google.gmail({version: 'v1', auth})
 
     function makeBody() {
         const str = [
@@ -122,8 +131,33 @@ async function sendMail(auth, to, from, subject, message){
 
 }
 
+function listMessages(userId, query, callback) {
+    const gmail = google.gmail({version: 'v1', oAuth2Client})
+    let getPageOfMessages = function (request, result) {
+        request.execute((resp) => {
+            result = result.concat(resp.messages)
+            let nextPageToken = resp.nextPageToken
+            if (nextPageToken) {
+                request = gmail.users.messages.list({
+                    'userId': 'me',
+                    'pageToken': nextPageToken,
+                    'q': query
+                })
+                getPageOfMessages(request, res)
+            } else {
+                return callback(res)
+            }
+        })
+    }
+    var initialRequest = gmail.users.messages.list({
+        'userId': 'me',
+        'q': query
+    })
+    getPageOfMessages(initialRequest, [])
+}
+
 exports.sendMail = async (req, res) => {
-    
+
     try {
 
         const emailDetails = {
@@ -134,10 +168,111 @@ exports.sendMail = async (req, res) => {
         }
 
         await sendMail(oAuth2Client, emailDetails.to, emailDetails.from, emailDetails.subject, emailDetails.message)
-        return res.status(200).json({ message: "Email has been send" })
-        
+        return res.status(200).json({message: "Email has been send"})
+
     } catch (err) {
         console.log(err)
         return res.status(500).json({error: err.code})
+    }
+}
+
+exports.addSpammer = async (req, res) => {
+
+    let spamData = []
+
+    try {
+        const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
+
+        if (data.empty) {
+            return res.status(404).json({error: 'No spammed email addresses found'})
+        } else {
+            data.forEach(doc => {
+
+                // Get messages from user
+                const messages = listMessages('me', `from:${doc.data().spammedEmail}`)
+
+                // Add to spamData array
+                spamData.push({
+                    //spammedEmail: doc.data().spammedEmail,
+                    messages
+                })
+            })
+        }
+
+        return res.json(spamData)
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: err.code})
+    }
+
+    /*    const gmail = google.gmail({version: 'v1', oAuth2Client})
+        let getPageOfMessages = function (request, result) {
+            request.execute((resp) => {
+                result = result.concat(resp.messages)
+                let nextPageToken = resp.nextPageToken
+                if (nextPageToken){
+                    request = gmail.users.messages.list({
+                        'userId': 'me',
+                        'pageToken': nextPageToken,
+                        'q': query
+                    })
+                    getPageOfMessages(request, res)
+                } else {
+                    return callback(res)
+                }
+            })
+        }
+        var initialRequest = gmail.users.messages.list({
+            'userId': 'me',
+            'q': query
+        })
+        getPageOfMessages(initialRequest, [])*/
+
+    /*let spamData = []
+
+    try {
+        const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
+
+        if (data.empty) {
+            return res.status(404).json({error: 'No spammed email addresses found'})
+        } else {
+            data.forEach(doc => {
+                // Add to spamData array
+                spamData.push({
+                    spammedEmail: doc.data().spammedEmail
+                })
+
+                async function getEmail() {
+                    try {
+                        return await gmail.users.messages.list(q=`from:${doc.data().spammedEmail}`)
+                    } catch (err) {
+                        console.log(err)
+                    }
+                }
+
+                getEmail()
+            })
+        }
+
+        //return res.json(spamData)
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: err.code})
+    }*/
+
+}
+
+exports.getMessages = async (req, res) => {
+    const gmail = google.gmail({version: 'v1', auth: oAuth2Client})
+    try {
+        const messages = await gmail.users.messages.list({
+            oAuth2Client,
+            userId: 'me',
+            q: 'from:9001603@student.tcrmbo.nl'
+        })
+
+        return res.json(messages.data.messages)
+    } catch (e) {
+        return res.json(e)
     }
 }
