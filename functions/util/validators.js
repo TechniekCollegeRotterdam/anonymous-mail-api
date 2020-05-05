@@ -68,3 +68,15 @@ exports.validateDatabaseData = (data) => {
         valid: Object.keys(errors).length === 0
     }
 }
+
+exports.validateBlacklistData = (data) => {
+    let errors = {}
+
+    if (Empty(data.blacklistEmail))
+        errors.blacklistEmail = 'Must not be empty'
+
+    return {
+        errors,
+        valid: Object.keys(errors).length === 0
+    }
+}

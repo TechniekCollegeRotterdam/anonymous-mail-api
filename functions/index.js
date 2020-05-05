@@ -18,7 +18,9 @@ const {
 const {
     addSpamEmailAddress,
     deleteSpamEmailAddress,
-    getSpamEmailAddresses
+    getSpamEmailAddresses,
+    addBlockedEmail,
+    deleteBlockedEmail
 } = require('./handlers/database')
 
 // User
@@ -35,5 +37,7 @@ app.get('/getMessages', protectedRoute, getMessages)
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)
 app.delete('/deleteSpamEmailAddress/:emailId', protectedRoute, deleteSpamEmailAddress)
 app.get('/getSpamEmailAddresses', protectedRoute, getSpamEmailAddresses)
+app.post('/addBlockedEmail', protectedRoute, addBlockedEmail)
+app.delete('/deleteBlockedEmail/:emailId', protectedRoute, deleteBlockedEmail)
 
 exports.api = functions.region('europe-west2').https.onRequest(app)
