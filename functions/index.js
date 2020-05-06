@@ -10,13 +10,13 @@ const {
 } = require('./handlers/users');
 
 const {
+    addSpamEmailAddress,
     sendMail,
     addSpammer,
     getMessages
 } = require('./handlers/gmail')
 
 const {
-    addSpamEmailAddress,
     deleteSpamEmailAddress,
     getSpamEmailAddresses,
     addBlockedEmail,
