@@ -6,7 +6,8 @@ const protectedRoute = require('./util/protectedRoute')
 const {
     signUpWithEmailAndPassword,
     loginWithEmailAndPassword,
-    getOwnUserData
+    getOwnUserData,
+    updateUserData
 } = require('./handlers/users');
 
 const {
@@ -27,6 +28,7 @@ const {
 app.post('/signUpWithEmailAndPassword', signUpWithEmailAndPassword);
 app.post('/loginWithEmailAndPassword', loginWithEmailAndPassword)
 app.get('/getOwnUserData/:username', protectedRoute, getOwnUserData)
+app.post('/updateUserData', protectedRoute, updateUserData)
 
 // Mail
 app.post('/sendMail', protectedRoute, sendMail)

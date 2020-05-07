@@ -1,6 +1,6 @@
 const config = require('../util/config')
 const {db, admin} = require('../util/admin')
-const {validateSignUpData, validateLoginData} = require('../util/validators')
+const {validateUserData, validateLoginData} = require('../util/validators')
 
 const firebase = require('firebase')
 firebase.initializeApp(config);
@@ -15,7 +15,7 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         }
     };
 
-    const {valid, errors} = validateSignUpData(newUser)
+    const {valid, errors} = validateUserData(newUser)
 
     if (!valid) return res.status(400).json(errors)
 
@@ -144,6 +144,70 @@ exports.getOwnUserData = async (req, res) => {
             return res.status(401).json({general: 'Login expired, please login again'});
         else
             return res.status(500).json({error: err.code})
+    }
+}
+
+exports.updateUserData = async (req, res) => {
+    const updatedUser = {
+        email: req.body.email,
+        password: req.body.password,
+        username: req.body.username,
+        twoFactor: {
+            enabled: req.body.twoFactor.enabled,
+            type: req.body.twoFactor.type,
+            info: req.body.twoFactor.info
+        }
+    };
+
+    const {valid, errors} = validateUserData(updatedUser)
+
+    if (!valid) return res.status(400).json(errors)
+
+    try {
+
+        const currentUser = await db.doc(`/users/${req.user.username}`).get()
+
+        if (!currentUser.exists){
+            return res.status(404).json({user: 'User not found'})
+        }
+
+        if (currentUser.data().username !== req.user.username) {
+            return res.status(403).json({error: 'Unauthorized'})
+        }
+
+        /*const blacklist = db.doc(`/blacklist/${req.params.emailId}`)
+        blacklist.get()
+            .then(doc => {
+                if (!doc.exists) {
+                    return res.status(404).json({error: 'Email address not found'})
+                }
+                if (doc.data().username !== req.user.username) {
+                    return res.status(403).json({error: 'Unauthorized'})
+                } else {
+                    return blacklist.delete()
+                }
+            })
+            // eslint-disable-next-line promise/always-return
+            .then(() => {
+                res.json({message: 'Blacklist email address deleted successfully'})
+            })
+            .catch(err => {
+                console.error(err)
+                if (err.code === "auth/id-token-expired")
+                    return res.status(401).json({general: 'Login expired. Please login again'})
+                else
+                    return res.status(500).json({error: err.code})
+            })*/
+
+        await db.doc(`/users/${req.user.username}`).set(updatedUser)
+
+        return res.status(200).json({user: 'User updated'})
+    } catch (err) {
+        console.error(err.code);
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
+        else
+            return res.status(500).json({general: 'Something went wrong, please try again'})
     }
 }
 

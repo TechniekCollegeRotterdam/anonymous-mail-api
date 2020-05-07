@@ -18,7 +18,7 @@ const Empty = string => {
         return false
 }
 
-exports.validateSignUpData = (data) => {
+exports.validateUserData = (data) => {
     let errors = {}
 
     if (Empty(data.email))
