@@ -80,3 +80,15 @@ exports.validateBlacklistData = (data) => {
         valid: Object.keys(errors).length === 0
     }
 }
+
+exports.validateForgottenPasswordData = (data) => {
+    let errors = {}
+
+    if (Empty(data))
+        errors.email = 'Must not be empty'
+
+    return {
+        errors,
+        valid: Object.keys(errors).length === 0
+    }
+}

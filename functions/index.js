@@ -8,7 +8,8 @@ const {
     loginWithEmailAndPassword,
     getOwnUserData,
     updateUserData,
-    signOut
+    signOut,
+    forgotPassword
 } = require('./handlers/users');
 
 const {
@@ -31,6 +32,7 @@ app.post('/loginWithEmailAndPassword', loginWithEmailAndPassword)
 app.get('/getOwnUserData/:username', protectedRoute, getOwnUserData)
 app.post('/updateUserData', protectedRoute, updateUserData)
 app.get('/signOut', protectedRoute, signOut)
+app.post('/forgotPassword', forgotPassword)
 
 // Mail
 app.post('/sendMail', protectedRoute, sendMail)

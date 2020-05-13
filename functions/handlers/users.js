@@ -1,6 +1,6 @@
 const config = require('../util/config')
 const {db, admin} = require('../util/admin')
-const {validateUserData, validateLoginData} = require('../util/validators')
+const {validateUserData, validateLoginData, validateForgottenPasswordData} = require('../util/validators')
 
 const firebase = require('firebase')
 firebase.initializeApp(config);
@@ -213,4 +213,32 @@ exports.updateUserData = async (req, res) => {
 
 exports.signOut = async () => {
     return await firebase.auth().signOut()
+}
+
+exports.forgotPassword = async (req, res) => {
+    const email = req.body.email
+
+    const {errors, valid} = validateForgottenPasswordData(email)
+
+    if (!valid) return res.status(400).json(errors)
+
+    try {
+        // Check if user has sign in method
+        const getUserAccount = await firebase.auth().fetchSignInMethodsForEmail(email)
+
+        // If user has sign in method send forgot password mail
+        if (!getUserAccount.empty){
+            await firebase.auth().sendPasswordResetEmail(email)
+
+            return res.status(200).json('Email has been send!')
+        }
+        else {
+            return res.status(403).json('Whoops! We don\'t know that email address')
+        }
+
+    } catch (err) {
+        console.log(err)
+        if (err.code === 'auth/invalid-email')
+            return res.status(403).json('Whoops! We don\'t know that email address')
+    }
 }
