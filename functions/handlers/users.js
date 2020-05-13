@@ -10,9 +10,7 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         email: req.body.email,
         password: req.body.password,
         username: req.body.username,
-        twoFactor: {
-            enabled: false
-        }
+        twoFactorEnabled: false
     };
 
     const {valid, errors} = validateUserData(newUser)
