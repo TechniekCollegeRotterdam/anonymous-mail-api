@@ -211,3 +211,6 @@ exports.updateUserData = async (req, res) => {
     }
 }
 
+exports.signOut = async () => {
+    return await firebase.auth().signOut()
+}
