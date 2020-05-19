@@ -1,10 +1,10 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
-const open = require('open')
 const {db} = require('../util/admin')
 const content = require('../token.json')
 const {validateDatabaseData} = require('../util/validators')
+const passomatic = require('passomatic')
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://mail.google.com/'];
@@ -82,7 +82,7 @@ function getNewToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 
-/*
+
 function listLabels(auth) {
     const gmail = google.gmail({version: 'v1', auth});
     gmail.users.labels.list({
@@ -93,14 +93,15 @@ function listLabels(auth) {
         if (labels.length) {
             console.log('Labels:');
             labels.forEach((label) => {
-                console.log(`- ${label.name}`);
+                if (label.id === 'SPAM')
+                    console.log(`- ${label.id}`);
             });
         } else {
             console.log('No labels found.');
         }
     });
 }
-*/
+
 
 exports.addSpamEmailAddress = async (req, res) => {
     const spamEmailData = {
@@ -120,8 +121,6 @@ exports.addSpamEmailAddress = async (req, res) => {
         const addedEmail = spamEmailData
         // Set spammedEmailId to the documents id
         addedEmail.spammedEmailId = doc.id
-
-        await addSpammer(oAuth2Client, spamEmailData.spammedEmail)
 
         return res.json(addedEmail)
     } catch (err) {
@@ -185,6 +184,12 @@ exports.sendMail = async (req, res) => {
     }
 }
 
+/**
+ * Adds given email address as spam email
+ * @param auth {google.auth.OAuth2} auth An authorized OAuth2 client.
+ * @param emailAddress {String}
+ * @returns {Promise<void>}
+ */
 async function addSpammer(auth, emailAddress) {
     // https://github.com/googleapis/google-api-nodejs-client/issues/1523
     const gmail = google.gmail({version: 'v1', auth})
@@ -193,6 +198,7 @@ async function addSpammer(auth, emailAddress) {
         await gmail.user.messages.modify({
             auth,
             userId: 'me',
+            //id: `${messageId}`,
             id: messageId,
             removeLabelIds: [
                 "INBOX"
@@ -214,11 +220,13 @@ async function addSpammer(auth, emailAddress) {
         await spammer(message.id)
     }*/
 
-    messages.data.messages.map(async (message) => await spammer(message.id))
+    messages.data.messages.map(async (message) => await spammer(message.id.toString()))
 
 }
 
 exports.addSpammer = async (req, res) => {
+
+    const gmail = google.gmail({version: 'v1', oAuth2Client})
 
     try {
         const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
@@ -226,8 +234,26 @@ exports.addSpammer = async (req, res) => {
         if (data.empty) {
             return res.status(404).json({error: 'No spammed email addresses found'})
         } else {
+            /*data.map(async (doc) => {
+                return await addSpammer(oAuth2Client, doc.data().spammedEmail)
+            })*/
+
             data.map(async (doc) => {
-                await addSpammer(oAuth2Client, doc.data().spammedEmail)
+                await gmail.users.settings.filters.create({
+                    userId: 'me',
+                    id: passomatic(1),
+                    criteria: {
+                        from: `${doc.data().spammedEmail}`
+                    },
+                    action: {
+                        removeLabelIds: [
+                            "INBOX"
+                        ],
+                        addLabelIds: [
+                            "SPAM"
+                        ]
+                    }
+                })
             })
         }
 
@@ -386,5 +412,13 @@ exports.getMessages = async (req, res) => {
             return res.status(401).json({general: 'Login expired, please login again'});
         else
             return res.status(500).json({error: err})
+    }
+}
+
+exports.getLabels = async (req, res) => {
+    try {
+        return await listLabels(oAuth2Client)
+    } catch (e) {
+        console.log(e)
     }
 }
