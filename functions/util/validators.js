@@ -86,6 +86,8 @@ exports.validateForgottenPasswordData = (data) => {
 
     if (Empty(data))
         errors.email = 'Must not be empty'
+    else if (!Gmail(data))
+        errors.email = 'Is not a valid Gmail address'
 
     return {
         errors,

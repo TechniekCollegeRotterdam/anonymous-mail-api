@@ -26,10 +26,7 @@ const db = {
             title: 'Standard reply',
             body: 'Standard reply body',
             subject: 'Standard reply subject',
-            to: [
-                'jerry@gmail.com',
-                'test2@gmail.com'
-            ]
+            to: 'jerry@gmail.com'
         }
     ],
     spammedEmails: [

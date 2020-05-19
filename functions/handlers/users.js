@@ -228,15 +228,15 @@ exports.forgotPassword = async (req, res) => {
         if (!getUserAccount.empty){
             await firebase.auth().sendPasswordResetEmail(email)
 
-            return res.status(200).json('Email has been send!')
+            return res.status(200).json({general: 'Email has been send!'})
         }
         else {
-            return res.status(403).json('Whoops! We don\'t know that email address')
+            return res.status(403).json({general: 'Whoops! We don\'t know that email address'})
         }
 
     } catch (err) {
         console.log(err)
-        if (err.code === 'auth/invalid-email')
-            return res.status(403).json('Whoops! We don\'t know that email address')
+        if (err.code === 'auth/user-not-found')
+            return res.status(403).json({general: 'Whoops! We don\'t know that email address'})
     }
 }
