@@ -10,7 +10,9 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         email: req.body.email,
         password: req.body.password,
         username: req.body.username,
-        twoFactorEnabled: false
+        twoFactorEnabled: false,
+        type: req.body.type,
+        info: req.body.info
     };
 
     const {valid, errors} = validateUserData(newUser)
@@ -39,9 +41,9 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
             userId,
             email: newUser.email,
             username: newUser.username,
-            twoFactor: {
-                enabled: false
-            }
+            twoFactorEnabled: newUser.twoFactorEnabled,
+            type: newUser.type,
+            info: newUser.info
         }
 
         // User userCredentials object to create an user document of the new user

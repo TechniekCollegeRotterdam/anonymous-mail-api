@@ -5,13 +5,9 @@ const db = {
             email: 'user@gmail.com',
             username: 'user',
             // twoFac is an object
-            twoFactor: [
-                {
-                    enabled: true,
-                    type: 'email',
-                    info: 'user@gmail.com'
-                }
-            ],
+            twoFactorEnabled: true,
+            type: 'email',
+            info: 'user@gmail.com'
         }
     ],
     blacklist: [
