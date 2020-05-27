@@ -46,4 +46,4 @@ app.get('/getSpamEmailAddresses', protectedRoute, getSpamEmailAddresses)
 app.post('/addBlockedEmail', protectedRoute, addBlockedEmail)
 app.delete('/deleteBlockedEmail/:emailId', protectedRoute, deleteBlockedEmail)
 
-exports.api = functions.region('europe-west2').https.onRequest(app)
+exports.api = functions.region('europe-west2').https.onRequest(app); 
