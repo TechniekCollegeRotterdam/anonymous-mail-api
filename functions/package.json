@@ -21,7 +21,8 @@
     "firebase-tools": "^8.1.1",
     "googleapis": "^39.2.0",
     "grpc": "^1.24.2",
-    "open": "^7.0.3"
+    "open": "^7.0.3",
+    "passomatic": "^1.0.6"
   },
   "devDependencies": {
     "eslint": "^5.12.0",

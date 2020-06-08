@@ -16,7 +16,9 @@ const {
     addSpamEmailAddress,
     sendMail,
     addSpammer,
-    getMessages
+    getMessages,
+    listLabels,
+    getGmailData
 } = require('./handlers/gmail')
 
 const {
@@ -38,6 +40,8 @@ app.post('/forgotPassword', forgotPassword)
 app.post('/sendMail', protectedRoute, sendMail)
 app.get('/addSpammer', protectedRoute, addSpammer)
 app.get('/getMessages', protectedRoute, getMessages)
+app.get('/gmailData', protectedRoute, getGmailData)
+app.get('/listLabels', protectedRoute, listLabels)
 
 // Database
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)

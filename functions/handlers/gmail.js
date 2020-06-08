@@ -1,10 +1,10 @@
 const fs = require('fs');
 const readline = require('readline');
-const {google} = require('googleapis');
-const open = require('open')
-const {db} = require('../util/admin')
+const { google } = require('googleapis');
+const passomatic = require('passomatic');
+const { db } = require('../util/admin')
 const content = require('../token.json')
-const {validateDatabaseData} = require('../util/validators')
+const { validateDatabaseData } = require('../util/validators')
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://mail.google.com/'];
@@ -29,7 +29,7 @@ let oAuth2Client
  * @param {function} callback The callback to call with the authorized client.
  */
 function authorize(credentials, callback) {
-    const {client_secret, client_id, redirect_uris} = credentials.web;
+    const { client_secret, client_id, redirect_uris } = credentials.web;
     oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
 
@@ -82,7 +82,7 @@ function getNewToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 
-/*
+
 function listLabels(auth) {
     const gmail = google.gmail({version: 'v1', auth});
     gmail.users.labels.list({
@@ -100,7 +100,6 @@ function listLabels(auth) {
         }
     });
 }
-*/
 
 exports.addSpamEmailAddress = async (req, res) => {
     const spamEmailData = {
@@ -109,7 +108,7 @@ exports.addSpamEmailAddress = async (req, res) => {
         addedAt: new Date().toISOString()
     }
 
-    const {valid, errors} = validateDatabaseData(spamEmailData)
+    const { valid, errors } = validateDatabaseData(spamEmailData)
 
     if (!valid) return res.status(400).json(errors)
 
@@ -126,15 +125,15 @@ exports.addSpamEmailAddress = async (req, res) => {
         return res.json(addedEmail)
     } catch (err) {
         if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
+            return res.status(401).json({ general: 'Login expired, please login again' });
         else
-            return res.status(500).json({error: err.code})
+            return res.status(500).json({ error: err.code })
     }
 }
 
 
 async function sendMail(auth, to, from, subject, message) {
-    const gmail = google.gmail({version: 'v1', auth})
+    const gmail = google.gmail({ version: 'v1', auth })
 
     function makeBody() {
         const str = [
@@ -175,19 +174,19 @@ exports.sendMail = async (req, res) => {
         }
 
         await sendMail(oAuth2Client, emailDetails.to, emailDetails.from, emailDetails.subject, emailDetails.message)
-        return res.status(200).json({message: "Email has been send"})
+        return res.status(200).json({ message: "Email has been send" })
 
     } catch (err) {
         if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
+            return res.status(401).json({ general: 'Login expired, please login again' });
         else
-            return res.status(500).json({error: err.code})
+            return res.status(500).json({ error: err.code })
     }
 }
 
 async function addSpammer(auth, emailAddress) {
     // https://github.com/googleapis/google-api-nodejs-client/issues/1523
-    const gmail = google.gmail({version: 'v1', auth})
+    const gmail = google.gmail({ version: 'v1', auth })
 
     async function spammer(messageId) {
         await gmail.user.messages.modify({
@@ -220,124 +219,99 @@ async function addSpammer(auth, emailAddress) {
 
 exports.addSpammer = async (req, res) => {
 
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client })
+
     try {
         const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
 
         if (data.empty) {
-            return res.status(404).json({error: 'No spammed email addresses found'})
+            return res.status(404).json({ error: 'No spammed email addresses found' })
         } else {
-            data.map(async (doc) => {
-                await addSpammer(oAuth2Client, doc.data().spammedEmail)
+
+            data.forEach(async (doc) => {
+                try {
+                    return await gmail.users.settings.filters.create({
+                        oAuth2Client,
+                        "userId": 'me',
+                        "id": passomatic(1),
+                        "requestBody": {
+                            "criteria": {
+                                "from": `${doc.data().spammedEmail}`
+                            },
+                            "action": {
+                                "addLabelIds": [
+                                    "SPAM"
+                                ],
+                                "removeLabelIds": [
+                                    "INBOX"
+                                ]
+                            }
+                        }
+                    })
+
+                    //return res.json(createFilter)
+                } catch (error) {
+                    console.log(error);
+                    throw error
+                }
             })
         }
 
         return res.status(200).json('Spammer added')
     } catch (err) {
         if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
+            return res.status(401).json({ general: 'Login expired, please login again' });
         else
-            return res.status(500).json({error: err.code})
+            throw err
+        //return res.status(500).json({error: err.code})
     }
-
-    /*let spamEmails = []
-    let spamData = {
-        givenEmails : {}
-    }
-    let messages
-
-    try {
-        const data = await db.collection('spammedEmails').where('username', '==', req.user.username).get()
-
-        if (data.empty) {
-            return res.status(404).json({error: 'No spammed email addresses found'})
-        } else {
-            data.forEach((doc) => {
-                // Add to spamData array
-                spamEmails.push({
-                    spammedEmail: doc.data().spammedEmail
-                })
-
-                // Convert array to Object
-                Object.assign(spamData.givenEmails, spamEmails)
-
-
-            })
-        }
-
-                for (let email of Object.values(spamData.givenEmails)){
-                    // eslint-disable-next-line no-loop-func
-                    email.spammedEmail.foreach(async (mail) => {
-                        messages = await gmail.user.messages.list({
-                            oAuth2Client,
-                            userId: 'me',
-                            q: `from:${mail}`
-                        })
-                    })
-                    console.log(email)
-                    /!*for (let i = 0; i <= email.length; i++){
-                        messages = await gmail.user.messages.list({
-                            oAuth2Client,
-                            userId: 'me',
-                            q: `from:${email}`
-                        })
-                    }*!/
-
-                }
-
-        return res.json(messages.data.messages)
-    } catch (err) {
-        if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
-        else
-            return res.status(500).json({error: err.code})
-    }*/
 }
 
 exports.getMessages = async (req, res) => {
     // https://github.com/googleapis/google-api-nodejs-client/issues/1523
-    const gmail = google.gmail({version: 'v1', auth: oAuth2Client})
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client })
 
     const test = ['9001603@student.tcrmbo.nl', 'jeremiahkoeiman1@gmail.com']
 
     try {
 
         //for (let email of test) {
-            // Get all messages from the given email address
-            // eslint-disable-next-line no-await-in-loop
-            const messages = await gmail.users.messages.list({
+        // Get all messages from the given email address
+        // eslint-disable-next-line no-await-in-loop
+        const messages = await gmail.users.messages.list({
+            oAuth2Client,
+            userId: 'me',
+            q: `from:jeremiahkoeiman1@gmail.com`
+        })
+
+        /*messages.data.messages.map(async (message) => {
+            await gmail.users.messages.modify({
                 oAuth2Client,
                 userId: 'me',
-                q: `from:jeremiahkoeiman1@gmail.com`
-            })
-
-            /*messages.data.messages.map(async (message) => {
-                await gmail.users.messages.modify({
-                    oAuth2Client,
-                    userId: 'me',
-                    id: message.id,
-                    removeLabelIds: [
-                        'INBOX'
-                    ],
-                    addLabelIds: [
-                        'SPAM'
-                    ]
-                })
-            })*/
-
-            //console.log(email)
-
-            // eslint-disable-next-line no-await-in-loop
-            /*await gmail.users.messages.modify({
-                oAuth2Client,
-                userId: 'me',
-                id: messages.data.messages.id,
+                id: message.id,
                 removeLabelIds: [
                     'INBOX'
                 ],
                 addLabelIds: [
                     'SPAM'
                 ]
-            })*/
+            })
+        })*/
+
+        //console.log(email)
+
+        // eslint-disable-next-line no-await-in-loop
+        /*await gmail.users.messages.modify({
+            oAuth2Client,
+            userId: 'me',
+            id: messages.data.messages.id,
+            removeLabelIds: [
+                'INBOX'
+            ],
+            addLabelIds: [
+                'SPAM'
+            ]
+        })*/
         //}
 
         /*const messages = await gmail.users.messages.list({
@@ -383,8 +357,79 @@ exports.getMessages = async (req, res) => {
     } catch (err) {
         console.log(err)
         if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
+            return res.status(401).json({ general: 'Login expired, please login again' });
         else
-            return res.status(500).json({error: err})
+            return res.status(500).json({ error: err })
+    }
+}
+
+exports.listLabels = async (req, res) => {
+    let data = {}
+
+    let labels = await listLabels(oAuth2Client)
+
+    data.labels = labels
+
+    return res.json(data)
+}
+
+exports.getGmailData = async (req, res) => {
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client })
+
+    let data = {}
+    let labels = 0
+
+    try {
+
+        let inbox = await gmail.users.messages.list({
+            oAuth2Client,
+            userId: 'me',
+        })
+
+        let trash = await gmail.users.drafts.list({
+            oAuth2Client,
+            userId: 'me'
+        })
+
+        let unreadMessages = await gmail.users.messages.list({
+            oAuth2Client,
+            userId: 'me',
+            q: 'is:unread'
+        })
+
+        let readMessages = await gmail.users.messages.list({
+            oAuth2Client,
+            userId: 'me',
+            q: 'is:read'
+        })
+
+        let getLabels = await gmail.users.labels.list({
+            oAuth2Client,
+            userId: 'me'
+        })
+
+        let countLabels = 
+            getLabels.data.labels.filter((label) => label.messageListVisibility !== "hide")
+                .filter((label) => label.name !== "STARRED")
+                    .filter((label) => label.name !== "UNREAD")
+
+        countLabels.forEach(() => {
+            labels++
+        })
+
+
+        data.inboxMessages = inbox.data.resultSizeEstimate
+        data.trashMessages = trash.data.resultSizeEstimate
+        data.unreadMessages = unreadMessages.data.resultSizeEstimate
+        data.readMessages = readMessages.data.resultSizeEstimate
+        data.labels = labels
+
+        return res.json(data)
+    } catch (err) {
+        console.log(err)
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({ general: 'Login expired, please login again' });
+        else
+            return res.status(500).json({error: err.code})
     }
 }

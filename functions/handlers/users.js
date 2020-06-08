@@ -148,7 +148,6 @@ exports.getOwnUserData = async (req, res) => {
 exports.updateUserData = async (req, res) => {
     const updatedUser = {
         email: req.body.email,
-        password: req.body.password,
         username: req.body.username,
         twoFactor: {
             enabled: req.body.twoFactor.enabled,
@@ -172,30 +171,6 @@ exports.updateUserData = async (req, res) => {
         if (currentUser.data().username !== req.user.username) {
             return res.status(403).json({error: 'Unauthorized'})
         }
-
-        /*const blacklist = db.doc(`/blacklist/${req.params.emailId}`)
-        blacklist.get()
-            .then(doc => {
-                if (!doc.exists) {
-                    return res.status(404).json({error: 'Email address not found'})
-                }
-                if (doc.data().username !== req.user.username) {
-                    return res.status(403).json({error: 'Unauthorized'})
-                } else {
-                    return blacklist.delete()
-                }
-            })
-            // eslint-disable-next-line promise/always-return
-            .then(() => {
-                res.json({message: 'Blacklist email address deleted successfully'})
-            })
-            .catch(err => {
-                console.error(err)
-                if (err.code === "auth/id-token-expired")
-                    return res.status(401).json({general: 'Login expired. Please login again'})
-                else
-                    return res.status(500).json({error: err.code})
-            })*/
 
         await db.doc(`/users/${req.user.username}`).set(updatedUser)
 
