@@ -1,8 +1,10 @@
 module.exports = {
-    apiKey: process.env.REACT_APP_API_KEY,
-    authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-    databaseURL: process.env.REACT_APP_DATABASE_URL,
-    projectId: process.env.REACT_APP_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+    apiKey: "AIzaSyA2zZ5CnExSrizXPn4MqzAHy01pwrV8UZ8",
+    authDomain: "anonymous-email-app.firebaseapp.com",
+    databaseURL: "https://anonymous-email-app.firebaseio.com",
+    projectId: "anonymous-email-app",
+    storageBucket: "anonymous-email-app.appspot.com",
+    messagingSenderId: "515588733829",
+    appId: "1:515588733829:web:53dcdb8c854ba872cfe2ec",
+    measurementId: "G-Q6R9SMMN24"
 }

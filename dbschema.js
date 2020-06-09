@@ -3,6 +3,7 @@ const db = {
         {
             userId: 'vgdscjhbakjxdhbgehjnd',
             email: 'user@gmail.com',
+<<<<<<< HEAD
             userName: 'user',
             twoFac: [
                 {
@@ -10,6 +11,11 @@ const db = {
                     type: 'phonenuber',
                     info: '06000000000'
                 },
+=======
+            username: 'user',
+            // twoFac is an object
+            twoFactor: [
+>>>>>>> develop
                 {
                     enabled: true,
                     type: 'email',
@@ -28,6 +34,7 @@ const db = {
         {
             autoRepliesItemId: 'chbdvgsdhchbsjd',
             title: 'Standard reply',
+<<<<<<< HEAD
             body: 'Standard reply body'
         }
     ],
@@ -35,6 +42,18 @@ const db = {
         {
             spamedEmailId: 'vyeskhfnbwykwheriyfuber',
             spamedEmail: 'test@gmail.com'
+=======
+            body: 'Standard reply body',
+            subject: 'Standard reply subject',
+            to: 'jerry@gmail.com'
+        }
+    ],
+    spammedEmails: [
+        {
+            username: 'user',
+            spammedEmail: 'test@gmail.com',
+            addedAt: '2019-12-06T15:17:46.433Z'
+>>>>>>> develop
         }
     ]
 }
