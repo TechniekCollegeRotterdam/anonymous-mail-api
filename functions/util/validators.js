@@ -94,3 +94,34 @@ exports.validateForgottenPasswordData = (data) => {
         valid: Object.keys(errors).length === 0
     }
 }
+
+// Validate Auto Reply Data
+exports.validateAutoReplyData = (data) => {
+ 
+    let errors = {}
+ 
+    if(Empty(data.username)){
+        errors.username = 'Must not be empty' 
+    }
+ 
+    else if(Empty(data.title)){
+        errors.title = 'Must not be empty' 
+    }
+ 
+    else if(Empty(data.body)){
+        errors.body = 'Must not be empty' 
+    }
+ 
+    else if(Empty(data.subject)){
+        errors.subject = 'Must not be empty' 
+    }
+ 
+    else if(Empty(data.to)){
+        errors.to = 'Must not be empty' 
+    }
+ 
+    return{
+        errors, 
+        valid: Object.keys(errors).length === 0 
+    }
+}

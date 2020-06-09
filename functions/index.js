@@ -40,5 +40,6 @@ app.get('/gmailData', protectedRoute, getGmailData)
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)
 app.delete('/deleteSpamEmailAddress/:emailId', protectedRoute, deleteSpamEmailAddress)
 app.get('/getSpamEmailAddresses', protectedRoute, getSpamEmailAddresses)
+app.post('/addAutoReply', protectedRoute, addAutoReply) // add auto route
 
 exports.api = functions.region('europe-west2').https.onRequest(app); 
