@@ -15,17 +15,12 @@ const {
 const {
     addSpamEmailAddress,
     sendMail,
-    addSpammer,
-    getMessages,
-    listLabels,
     getGmailData
 } = require('./handlers/gmail')
 
 const {
     deleteSpamEmailAddress,
     getSpamEmailAddresses,
-    addBlockedEmail,
-    deleteBlockedEmail
 } = require('./handlers/database')
 
 // User
@@ -38,16 +33,12 @@ app.post('/forgotPassword', forgotPassword)
 
 // Mail
 app.post('/sendMail', protectedRoute, sendMail)
-app.get('/addSpammer', protectedRoute, addSpammer)
-app.get('/getMessages', protectedRoute, getMessages)
+//app.get('/addSpammer', protectedRoute, addSpammer)
 app.get('/gmailData', protectedRoute, getGmailData)
-app.get('/listLabels', protectedRoute, listLabels)
 
 // Database
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)
 app.delete('/deleteSpamEmailAddress/:emailId', protectedRoute, deleteSpamEmailAddress)
 app.get('/getSpamEmailAddresses', protectedRoute, getSpamEmailAddresses)
-app.post('/addBlockedEmail', protectedRoute, addBlockedEmail)
-app.delete('/deleteBlockedEmail/:emailId', protectedRoute, deleteBlockedEmail)
 
 exports.api = functions.region('europe-west2').https.onRequest(app); 
