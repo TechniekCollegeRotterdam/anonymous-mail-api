@@ -48,10 +48,7 @@ exports.signUpWithEmailAndPassword = async (req, res) => {
         await db.doc(`/users/${newUser.username}`).set(userCredentials)
 
         // Create custom token
-        const token = await admin.auth().createCustomToken(userId)
-
-        // Sign in user
-        await firebase.auth().signInWithCustomToken(token)
+        const token = await data.user.getIdToken()
 
         // TODO: send email verification mail. Login when verified. Comment out line 59
 
@@ -124,25 +121,25 @@ exports.loginWithEmailAndPassword = async (req, res) => {
     }
 }
 
-exports.getOwnUserData = async (req, res) => {
-    let userDetails = {}
+exports.getOwnUserData = (req, res) => {
 
-    try {
-        // Get user
-        const user = await db.doc(`/users/${req.user.username}`).get()
+    // Get user
+    db.collection('users').where('username', '==', req.user.username).get()
+        .then((snapshot) => {
+            // eslint-disable-next-line promise/always-return
+            if (snapshot.empty)
+                return res.status(404).json({error: 'User not found'})
 
-        // Check if user exists
-        if (user.exists) {
-            userDetails.credentials = user.data()
-        } else
-            return res.status(404).json({error: 'User not found'})
-
-    } catch (err) {
-        if (err.code === "auth/id-token-expired")
-            return res.status(401).json({general: 'Login expired, please login again'});
-        else
-            return res.status(500).json({error: err.code})
-    }
+            snapshot.forEach((doc) => {
+                return res.status(200).json(doc.data())
+            })
+        })
+        .catch((err) => {
+            if (err.code === "auth/id-token-expired")
+                return res.status(401).json({general: 'Login expired, please login again'});
+            else
+                return res.status(500).json({error: err.code})
+        })
 }
 
 exports.updateUserData = async (req, res) => {
@@ -164,7 +161,7 @@ exports.updateUserData = async (req, res) => {
 
         const currentUser = await db.doc(`/users/${req.user.username}`).get()
 
-        if (!currentUser.exists){
+        if (!currentUser.exists) {
             return res.status(404).json({user: 'User not found'})
         }
 
@@ -200,12 +197,11 @@ exports.forgotPassword = async (req, res) => {
         const getUserAccount = await firebase.auth().fetchSignInMethodsForEmail(email)
 
         // If user has sign in method send forgot password mail
-        if (!getUserAccount.empty){
+        if (!getUserAccount.empty) {
             await firebase.auth().sendPasswordResetEmail(email)
 
             return res.status(200).json({general: 'Email has been send!'})
-        }
-        else {
+        } else {
             return res.status(403).json({general: 'Whoops! We don\'t know that email address'})
         }
 

@@ -38,7 +38,7 @@ const {
 // User
 app.post('/signUpWithEmailAndPassword', signUpWithEmailAndPassword);
 app.post('/loginWithEmailAndPassword', loginWithEmailAndPassword)
-app.get('/getOwnUserData/:username', protectedRoute, getOwnUserData)
+app.get('/getOwnUserData', protectedRoute, getOwnUserData)
 app.post('/updateUserData', protectedRoute, updateUserData)
 app.get('/signOut', protectedRoute, signOut)
 app.post('/forgotPassword', forgotPassword)
