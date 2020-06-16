@@ -1,5 +1,5 @@
 const {db} = require('../util/admin')
-const {validateBlacklistData, validateDatabaseData} = require('../util/validators')
+const {validateBlacklistData, validateDatabaseData, validateAutoReplyData} = require('../util/validators')
 
 exports.addSpamEmailAddress = async (req, res) => {
     const spamEmailData = {
@@ -155,7 +155,7 @@ exports.addAutoReply = (req, res) => {
     // promise 
  
     db  
-    .collection('autoReplyTest')
+    .collection('autoReplies')
     .add(autoReplyData)
     .then((doc) => {
         const addedAutoReply = autoReplyData
@@ -173,4 +173,28 @@ exports.addAutoReply = (req, res) => {
         else
             return res.status(500).json({error: error.code}) //  internal server error
     })
+}
+
+exports.getAutoReply = async (req, res) => {
+
+    let autoReplyData = []
+
+    try {
+        const data = await db.collection('autoReplies').where('username', '==', req.user.username).get()
+
+        if (data.empty) {
+            return res.status(404).json({error: 'No auto replies found'})
+        } else {
+            data.forEach(doc => {
+                autoReplyData.push(doc.data())
+            })
+        }
+
+        return res.json(autoReplyData)
+    } catch (err) {
+        if (err.code === "auth/id-token-expired")
+            return res.status(401).json({general: 'Login expired, please login again'});
+        else
+            return res.status(500).json({error: err.code})
+    }
 }
