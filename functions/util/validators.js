@@ -125,3 +125,21 @@ exports.validateAutoReplyData = (data) => {
         valid: Object.keys(errors).length === 0 
     }
 }
+
+exports.validateSendMailData = (data) => {
+    let errors = {}
+
+    if (Empty(data.to))
+        errors.to = 'Must not be empty'
+
+    if (Empty(data.subject))
+        errors.to = 'Must not be empty'
+
+    if (Empty(data.message))
+        errors.to = 'Must not be empty'
+
+    return {
+        errors,
+        valid: Object.keys(errors).length === 0
+    }
+}

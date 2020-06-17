@@ -3,6 +3,7 @@ const readline = require('readline');
 const { google } = require('googleapis');
 const passomatic = require('passomatic');
 const { db } = require('../util/admin')
+const { validateSendMailData } = require('../util/validators')
 const content = require('../token.json')
 
 // If modifying these scopes, delete token.json.
@@ -141,7 +142,12 @@ exports.sendMail = async (req, res) => {
             message: req.body.message
         }
 
+        const { valid, errors } = validateSendMailData(emailDetails)
+
+        if (!valid) return res.status(400).json(errors)
+
         await sendMail(oAuth2Client, emailDetails.to, emailDetails.from, emailDetails.subject, emailDetails.message)
+
         return res.status(200).json({ message: "Email has been send" })
 
     } catch (err) {
