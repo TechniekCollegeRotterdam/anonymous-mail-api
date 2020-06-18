@@ -161,10 +161,8 @@ exports.addAutoReply = (req, res) => {
         const addedAutoReply = autoReplyData
         
         addedAutoReply.id = doc.id
-
-        addedAutoReply.message = 'Auto reply added'
  
-        return res.status(200).json(addedAutoReply) //succeed 200
+        return res.status(200).json({ message: 'Auto reply added' }) //succeed 200
  
     })
     .catch((error) => {
