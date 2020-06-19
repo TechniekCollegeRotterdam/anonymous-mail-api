@@ -16,11 +16,9 @@ exports.addSpamEmailAddress = async (req, res) => {
         // Add document
         const doc = await db.collection('spammedEmails').add(spamEmailData)
 
-        const addedEmail = spamEmailData
-        // Set spammedEmailId to the documents id
-        addedEmail.spammedEmailId = doc.id
+        spamEmailData.spammedEmailId = doc.id
 
-        return res.json(addedEmail)
+        return res.json({message: 'Spammed email address added'})
     } catch (err) {
         if (err.code === "auth/id-token-expired")
             return res.status(401).json({ general: 'Login expired, please login again' });
