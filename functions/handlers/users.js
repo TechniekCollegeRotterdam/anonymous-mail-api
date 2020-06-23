@@ -1,3 +1,4 @@
+const passomatic = require('passomatic')
 const config = require('../util/config')
 const {db, admin} = require('../util/admin')
 const {validateUserData, validateLoginData, validateForgottenPasswordData} = require('../util/validators')
@@ -79,30 +80,6 @@ exports.loginWithEmailAndPassword = async (req, res) => {
         // Sign in user
         const data = await firebase.auth().signInWithEmailAndPassword(userCredentials.email, userCredentials.password)
 
-        // TODO: Get user data
-        /*
-        * TODO: Two step authentication for email and sms
-        *  pseudocode:
-        * swith(user.twoFactor.enable) {
-        * case true:
-        *   switch(user.twoFactor.type) {
-        *       case 'email':
-        *           twoStepEmail(user.twoFactor.info)
-        *           break
-        *       case 'sms':
-        *           twoStepSMS(user.twoFactor.info)
-        *           break
-        *       default:
-        *           break
-        *   }
-        *
-        * case false:
-        *   break
-        * default:
-        *   break
-        * }
-        * */
-
         // Get user token
         const token = await data.user.getIdToken()
 
@@ -143,23 +120,18 @@ exports.getOwnUserData = (req, res) => {
 }
 
 exports.updateUserData = async (req, res) => {
-    const updatedUser = {
-        email: req.body.email,
-        username: req.body.username,
-        twoFactor: {
-            enabled: req.body.twoFactor.enabled,
-            type: req.body.twoFactor.type,
-            info: req.body.twoFactor.info
-        }
-    };
-
-    const {valid, errors} = validateUserData(updatedUser)
-
-    if (!valid) return res.status(400).json(errors)
-
     try {
 
-        const currentUser = await db.doc(`/users/${req.user.username}`).get()
+        const updatedUser = {
+            email: req.body.email,
+            username: req.body.username
+        };
+
+        const {valid, errors} = validateUserData(updatedUser)
+
+        if (!valid) return res.status(400).json(errors)
+
+        const currentUser = await db.doc(`/users/${req.user.userId}`).get()
 
         if (!currentUser.exists) {
             return res.status(404).json({user: 'User not found'})

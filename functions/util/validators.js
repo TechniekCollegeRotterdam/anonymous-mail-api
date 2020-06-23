@@ -26,11 +26,6 @@ exports.validateUserData = (data) => {
     else if (!Gmail(data.email))
         errors.email = 'Must be a valid gmail address'
 
-    if (Empty(data.password))
-        errors.password = 'Must not be empty'
-    else if (data.password.length > 32)
-        errors.password = 'Must not be longer than 32 characters'
-
     if (Empty(data.username))
         errors.username = 'Must not be empty'
 

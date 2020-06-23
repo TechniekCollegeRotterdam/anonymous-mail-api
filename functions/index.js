@@ -50,7 +50,7 @@ app.get('/gmailData', protectedRoute, getGmailData)
 
 // Database
 app.post('/addSpamEmailAddress', protectedRoute, addSpamEmailAddress)
-app.delete('/deleteSpamEmailAddress/:emailId', protectedRoute, deleteSpamEmailAddress)
+app.delete('/deleteSpamEmailAddress/:spammedEmailId', protectedRoute, deleteSpamEmailAddress)
 app.get('/getSpamEmailAddresses', protectedRoute, getSpamEmailAddresses)
 app.post('/addAutoReply', protectedRoute, addAutoReply) // add auto route
 app.get('/getAutoReplies', protectedRoute, getAutoReply)

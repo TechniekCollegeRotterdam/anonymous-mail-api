@@ -1,8 +1,10 @@
+const passomatic = require('passomatic')
 const {db} = require('../util/admin')
 const {validateBlacklistData, validateDatabaseData, validateAutoReplyData} = require('../util/validators')
 
 exports.addSpamEmailAddress = async (req, res) => {
     const spamEmailData = {
+        spammedEmailId: passomatic(Math.round(Math.random() * 5)),
         username: req.user.username,
         spammedEmail: req.body.spammedEmail,
         addedAt: new Date().toISOString()
@@ -16,9 +18,9 @@ exports.addSpamEmailAddress = async (req, res) => {
         // Add document
         const doc = await db.collection('spammedEmails').add(spamEmailData)
 
-        spamEmailData.spammedEmailId = doc.id
+        return res.json(spamEmailData)
 
-        return res.json({message: 'Spammed email address added'})
+        //return res.json({message: 'Spammed email address added'})
     } catch (err) {
         if (err.code === "auth/id-token-expired")
             return res.status(401).json({ general: 'Login expired, please login again' });
@@ -29,17 +31,25 @@ exports.addSpamEmailAddress = async (req, res) => {
 
 exports.deleteSpamEmailAddress = async (req, res) => {
 
-    const document = db.doc(`/spammedEmails/${req.params.emailId}`)
-    document.get()
-        .then(doc => {
-            if (!doc.exists) {
+    db
+        .collection('spammedEmails')
+        .where('spammedEmailId', '==', req.params.spammedEmailId)
+        .get()
+        .then((snapshot) => {
+            // eslint-disable-next-line promise/always-return
+            if (snapshot.empty) {
                 return res.status(404).json({error: 'Email address not found'})
             }
-            if (doc.data().userHandle !== req.user.handle) {
-                return res.status(403).json({error: 'Unauthorized'})
-            } else {
-                return document.delete()
+            else {
+                snapshot.forEach((doc) => {
+                    if (doc.data().username !== req.user.username) {
+                        return res.status(403).json({error: 'Unauthorized'})
+                    } else {
+                        return doc.ref.delete()
+                    }
+                })
             }
+
         })
         // eslint-disable-next-line promise/always-return
         .then(() => {

@@ -17,6 +17,7 @@ module.exports = async (req, res, next) => {
         const data = await db.collection('users').where('userId', '==', req.user.uid).limit(1).get()
 
         req.user.username = data.docs[0].data().username
+        req.user.userId = data.docs[0].data().userId
 
         return next()
 
