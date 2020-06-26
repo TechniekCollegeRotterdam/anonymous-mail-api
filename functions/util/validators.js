@@ -31,6 +31,10 @@ exports.validateUserData = (data) => {
 
     if (Empty(data.password))
         errors.password = 'Must not be empty'
+    else if (data.password.length > 32)
+        errors.password = 'Must not be longer than 32 characters'
+    else if (data.password.length < 6)
+        errors.password = 'Must be longer than 6 characters'
 
     return {
         errors,
