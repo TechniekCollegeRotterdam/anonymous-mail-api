@@ -29,6 +29,9 @@ exports.validateUserData = (data) => {
     if (Empty(data.username))
         errors.username = 'Must not be empty'
 
+    if (Empty(data.password))
+        errors.password = 'Must not be empty'
+
     return {
         errors,
         valid: Object.keys(errors).length === 0
