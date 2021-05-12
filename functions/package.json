@@ -20,7 +20,7 @@
     "firebase-functions": "^3.3.0",
     "firebase-tools": "^8.4.3",
     "googleapis": "^39.2.0",
-    "grpc": "^1.24.2",
+    "grpc": "^1.24.9",
     "open": "^7.0.3",
     "passomatic": "^1.0.6"
   },
